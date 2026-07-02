@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"net"
@@ -275,12 +276,12 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 	if codeString != "" {
 		code, err := strconv.Atoi(codeString)
 		if err != nil && codeString != "" {
-			fmt.Fprintf(w, "argument 'code' must be an integer or empty, got %q\n", codeString)
+			fmt.Fprintf(w, "argument 'code' must be an integer or empty, got %q\n", html.EscapeString(codeString))
 			return
 		}
 		w.WriteHeader(code)
 	}
-	fmt.Fprintf(w, "%s", msg)
+	fmt.Fprintf(w, "%s", html.EscapeString(msg))
 }
 
 func clientIPHandler(w http.ResponseWriter, r *http.Request) {
