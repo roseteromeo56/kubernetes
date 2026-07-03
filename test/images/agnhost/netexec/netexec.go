@@ -406,7 +406,7 @@ func dialHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(request) == 0 {
-		http.Error(w, fmt.Sprintf("request parameter not specified. %v", err), http.StatusBadRequest)
+		http.Error(w, "request parameter not specified", http.StatusBadRequest)
 		return
 	}
 
