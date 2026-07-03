@@ -402,7 +402,7 @@ func dialHandler(w http.ResponseWriter, r *http.Request) {
 		tries, err = strconv.Atoi(tryParam)
 	}
 	if err != nil {
-		http.Error(w, fmt.Sprintf("tries parameter is invalid. %v", err), http.StatusBadRequest)
+		http.Error(w, "tries parameter is invalid", http.StatusBadRequest)
 		return
 	}
 	if len(request) == 0 {
