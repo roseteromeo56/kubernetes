@@ -385,6 +385,27 @@ func TestRunInContainer(t *testing.T) {
 	}
 }
 
+func TestServeLogsSetsSecureContentHeaders(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "kubelet-serve-logs")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	err = os.WriteFile(filepath.Join(tmpDir, "malicious.html"), []byte("<script>alert('xss')</script>"), 0644)
+	require.NoError(t, err)
+
+	kubelet := &Kubelet{}
+	kubelet.logServer = http.StripPrefix("/logs/", http.FileServer(http.Dir(tmpDir)))
+
+	req := httptest.NewRequest(http.MethodGet, "/logs/malicious.html", nil)
+	resp := httptest.NewRecorder()
+
+	kubelet.ServeLogs(resp, req)
+
+	assert.Equal(t, http.StatusOK, resp.Code)
+	assert.Equal(t, "text/plain;charset=UTF-8", resp.Header().Get("Content-Type"))
+	assert.Equal(t, "nosniff", resp.Header().Get("X-Content-Type-Options"))
+}
+
 type testServiceLister struct {
 	services []*v1.Service
 }
