@@ -32,6 +32,8 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+	resourceapi "k8s.io/api/resource/v1beta1"
+	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/component-base/metrics"
 
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -190,6 +192,10 @@ func NewCommand() *cobra.Command {
 		fs.AddFlagSet(f)
 	}
 	kubeletPlugin.RunE = func(cmd *cobra.Command, args []string) error {
+		if err := validateDriverName(*driverName); err != nil {
+			return fmt.Errorf("invalid --%s: %w", driverNameFlagName, err)
+		}
+
 		// Ensure that directories exist, creating them if necessary. We want
 		// to know early if there is a setup problem that would prevent
 		// creating those directories.
@@ -241,4 +247,17 @@ func NewCommand() *cobra.Command {
 	cliflag.SetUsageAndHelpFunc(kubeletPlugin, kubeletPluginFlagSets, cols)
 
 	return cmd
+}
+
+func validateDriverName(driverName string) error {
+	if driverName == "" {
+		return errors.New("must not be empty")
+	}
+	if len(driverName) > resourceapi.DriverNameMaxLength {
+		return fmt.Errorf("must be no more than %d characters long", resourceapi.DriverNameMaxLength)
+	}
+	if errs := utilvalidation.IsDNS1123Subdomain(driverName); len(errs) > 0 {
+		return fmt.Errorf("must be a valid DNS subdomain: %s", strings.Join(errs, ", "))
+	}
+	return nil
 }
