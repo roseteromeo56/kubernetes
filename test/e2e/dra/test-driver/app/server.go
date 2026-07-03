@@ -35,6 +35,7 @@ import (
 	"k8s.io/component-base/metrics"
 
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	utilvalidation "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -194,6 +195,9 @@ func NewCommand() *cobra.Command {
 		// creating those directories.
 		if err := os.MkdirAll(*cdiDir, os.FileMode(0750)); err != nil {
 			return fmt.Errorf("create CDI directory: %w", err)
+		}
+		if errs := utilvalidation.IsDNS1123Subdomain(*driverName); len(errs) > 0 {
+			return fmt.Errorf("invalid --%s %q: %s", driverNameFlagName, *driverName, strings.Join(errs, ", "))
 		}
 		datadir := path.Join(*kubeletPluginsDir, *driverName)
 		if err := os.MkdirAll(filepath.Dir(datadir), 0750); err != nil {
