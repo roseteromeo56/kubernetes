@@ -66,6 +66,29 @@ import (
 
 var containerRestartPolicyAlways = v1.ContainerRestartPolicyAlways
 
+func TestServeLogsSetsSecurityHeaders(t *testing.T) {
+	kl := &Kubelet{
+		logServer: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}),
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/logs/", nil)
+	recorder := httptest.NewRecorder()
+
+	kl.ServeLogs(recorder, req)
+
+	resp := recorder.Result()
+	defer resp.Body.Close()
+
+	if got := resp.Header.Get("X-Content-Type-Options"); got != "nosniff" {
+		t.Fatalf("expected X-Content-Type-Options header to be nosniff, got %q", got)
+	}
+	if got := resp.Header.Get("Content-Security-Policy"); got != "default-src 'none'; frame-ancestors 'none'" {
+		t.Fatalf("expected Content-Security-Policy header to be set, got %q", got)
+	}
+}
+
 func TestNodeHostsFileContent(t *testing.T) {
 	testCases := []struct {
 		hostsFileName            string
