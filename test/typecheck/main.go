@@ -20,7 +20,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"sort"
@@ -97,7 +96,7 @@ func verify(plat string, patterns []string, ignore map[string]bool) ([]string, e
 			continue
 		}
 		if *verbose {
-			serialFprintf(os.Stdout, "pkg %q has %d GoFiles\n", pkg.PkgPath, len(pkg.GoFiles))
+			serialStdoutf("pkg %q has %d GoFiles\n", pkg.PkgPath, len(pkg.GoFiles))
 		}
 		accumulate(pkg, allMap)
 	}
@@ -119,17 +118,17 @@ func verify(plat string, patterns []string, ignore map[string]bool) ([]string, e
 		}
 		if *defuses {
 			for id, obj := range pkg.TypesInfo.Defs {
-				serialFprintf(os.Stdout, "%s: %q defines %v\n",
+				serialStdoutf("%s: %q defines %v\n",
 					pkg.Fset.Position(id.Pos()), id.Name, obj)
 			}
 			for id, obj := range pkg.TypesInfo.Uses {
-				serialFprintf(os.Stdout, "%s: %q uses %v\n",
+				serialStdoutf("%s: %q uses %v\n",
 					pkg.Fset.Position(id.Pos()), id.Name, obj)
 			}
 		}
 	}
 	if *timings {
-		serialFprintf(os.Stdout, "%s took %.1fs\n", plat, time.Since(start).Seconds())
+		serialStdoutf("%s took %.1fs\n", plat, time.Since(start).Seconds())
 	}
 	return dedup(errors), nil
 }
@@ -141,7 +140,7 @@ func accumulate(pkg *packages.Package, allMap map[string]*packages.Package) {
 			continue
 		}
 		if *verbose {
-			serialFprintf(os.Stdout, "pkg %q imports %q\n", pkg.PkgPath, imp.PkgPath)
+			serialStdoutf("pkg %q imports %q\n", pkg.PkgPath, imp.PkgPath)
 		}
 		accumulate(imp, allMap)
 	}
@@ -163,10 +162,16 @@ func dedup(errors []packages.Error) []string {
 
 var outMu sync.Mutex
 
-func serialFprintf(w io.Writer, format string, a ...interface{}) {
+func serialStdoutf(format string, a ...interface{}) {
 	outMu.Lock()
 	defer outMu.Unlock()
-	_, _ = fmt.Fprintf(w, format, a...)
+	_, _ = fmt.Printf(format, a...)
+}
+
+func serialStderrf(format string, a ...interface{}) {
+	outMu.Lock()
+	defer outMu.Unlock()
+	_, _ = fmt.Fprintf(os.Stderr, format, a...)
 }
 
 func resolvePkgs(patterns ...string) (map[string]bool, error) {
@@ -237,10 +242,10 @@ func main() {
 			}()
 
 			f := false
-			serialFprintf(os.Stdout, "type-checking %s\n", plat)
+			serialStdoutf("type-checking %s\n", plat)
 			errors, err := verify(plat, args, ignorePkgs)
 			if err != nil {
-				serialFprintf(os.Stderr, "ERROR(%s): failed to verify: %v\n", plat, err)
+				serialStderrf("ERROR(%s): failed to verify: %v\n", plat, err)
 				f = true
 			} else if len(errors) > 0 {
 				for _, e := range errors {
@@ -248,7 +253,7 @@ func main() {
 					// don't have.
 					if !strings.HasSuffix(e, "could not import C (no metadata for C)") {
 						f = true
-						serialFprintf(os.Stderr, "ERROR(%s): %s\n", plat, e)
+						serialStderrf("ERROR(%s): %s\n", plat, e)
 					}
 				}
 			}
