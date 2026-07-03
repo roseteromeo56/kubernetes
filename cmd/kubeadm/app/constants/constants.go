@@ -598,12 +598,19 @@ func GetKubeletKubeConfigPath() string {
 }
 
 // GetDryRunDir creates a temporary directory under /etc/kubernetes/tmp.
-// If the environment variable with name stored in envVar is set, it is used instead.
+// If the environment variable with name stored in envVar is set, it must be an absolute path and it is used instead.
 // msgFunc will be used to print a message to the user that they can use envVar for override.
 func GetDryRunDir(envVar, dirName string, msgFunc func(format string, args ...interface{})) (string, error) {
 	envVarDir := os.Getenv(envVar)
 	if len(envVarDir) > 0 {
-		return envVarDir, nil
+		cleanEnvVarDir := filepath.Clean(envVarDir)
+		if !filepath.IsAbs(cleanEnvVarDir) {
+			return "", errors.Errorf("environment variable %s must be an absolute path, got %q", envVar, envVarDir)
+		}
+		if err := os.MkdirAll(cleanEnvVarDir, 0700); err != nil {
+			return "", errors.Wrapf(err, "failed to create directory %q", cleanEnvVarDir)
+		}
+		return cleanEnvVarDir, nil
 	}
 	tempDir := filepath.Join(KubernetesDir, TempDir)
 	generatedDir, err := createTmpDir(tempDir, dirName)

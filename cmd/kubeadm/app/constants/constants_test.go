@@ -17,7 +17,9 @@ limitations under the License.
 package constants
 
 import (
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/version"
@@ -95,6 +97,34 @@ func TestGetStaticPodFilepath(t *testing.T) {
 				)
 			}
 		})
+	}
+}
+
+func TestGetDryRunDirWithEnvVar(t *testing.T) {
+	envVarDir := filepath.Join(t.TempDir(), "dryrun")
+	t.Setenv(EnvVarInitDryRunDir, envVarDir)
+
+	actual, err := GetDryRunDir(EnvVarInitDryRunDir, "kubeadm-init-dryrun", func(string, ...interface{}) {})
+	if err != nil {
+		t.Fatalf("GetDryRunDir returned an unexpected error: %v", err)
+	}
+	if actual != envVarDir {
+		t.Fatalf("expected dry-run directory %q, got %q", envVarDir, actual)
+	}
+	if _, err := os.Stat(actual); err != nil {
+		t.Fatalf("expected directory %q to exist: %v", actual, err)
+	}
+}
+
+func TestGetDryRunDirRejectsRelativeEnvVarPath(t *testing.T) {
+	t.Setenv(EnvVarInitDryRunDir, "../dryrun")
+
+	_, err := GetDryRunDir(EnvVarInitDryRunDir, "kubeadm-init-dryrun", func(string, ...interface{}) {})
+	if err == nil {
+		t.Fatal("expected GetDryRunDir to reject a relative dry-run path")
+	}
+	if !strings.Contains(err.Error(), "must be an absolute path") {
+		t.Fatalf("expected absolute-path validation error, got: %v", err)
 	}
 }
 
