@@ -167,7 +167,7 @@ func (h WebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	klog.Infof("%s", out)
-	fmt.Fprintf(w, "%s", out)
+	_, _ = w.Write(out)
 }
 
 // parseRequest extracts an AdmissionReview from an http.Request if possible
