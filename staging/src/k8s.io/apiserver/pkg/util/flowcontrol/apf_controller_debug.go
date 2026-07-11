@@ -34,6 +34,7 @@ import (
 
 const (
 	queryIncludeRequestDetails = "includeRequestDetails"
+	debugResponseContentType   = "text/plain; charset=utf-8"
 )
 
 func (cfgCtlr *configController) Install(c *mux.PathRecorderMux) {
@@ -48,6 +49,7 @@ func (cfgCtlr *configController) Install(c *mux.PathRecorderMux) {
 }
 
 func (cfgCtlr *configController) dumpPriorityLevels(w http.ResponseWriter, r *http.Request) {
+	setDebugResponseHeaders(w)
 	cfgCtlr.lock.Lock()
 	defer cfgCtlr.lock.Unlock()
 	tabWriter := tabwriter.NewWriter(w, 8, 0, 1, ' ', 0)
@@ -102,6 +104,7 @@ func (cfgCtlr *configController) dumpPriorityLevels(w http.ResponseWriter, r *ht
 }
 
 func (cfgCtlr *configController) dumpQueues(w http.ResponseWriter, r *http.Request) {
+	setDebugResponseHeaders(w)
 	cfgCtlr.lock.Lock()
 	defer cfgCtlr.lock.Unlock()
 	tabWriter := tabwriter.NewWriter(w, 8, 0, 1, ' ', 0)
@@ -139,6 +142,7 @@ func (cfgCtlr *configController) dumpQueues(w http.ResponseWriter, r *http.Reque
 }
 
 func (cfgCtlr *configController) dumpRequests(w http.ResponseWriter, r *http.Request) {
+	setDebugResponseHeaders(w)
 	cfgCtlr.lock.Lock()
 	defer cfgCtlr.lock.Unlock()
 
@@ -217,6 +221,11 @@ func (cfgCtlr *configController) dumpRequests(w http.ResponseWriter, r *http.Req
 		}
 	}
 	runtime.HandleError(tabWriter.Flush())
+}
+
+func setDebugResponseHeaders(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", debugResponseContentType)
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 }
 
 func tabPrint(w io.Writer, row string) {
