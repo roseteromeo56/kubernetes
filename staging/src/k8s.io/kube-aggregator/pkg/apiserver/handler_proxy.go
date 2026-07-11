@@ -198,7 +198,8 @@ func (r *responder) Object(statusCode int, obj runtime.Object) {
 }
 
 func (r *responder) Error(_ http.ResponseWriter, _ *http.Request, err error) {
-	http.Error(r.w, err.Error(), http.StatusServiceUnavailable)
+	klog.ErrorS(err, "Error while proxying request to APIService")
+	http.Error(r.w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
 }
 
 // these methods provide locked access to fields

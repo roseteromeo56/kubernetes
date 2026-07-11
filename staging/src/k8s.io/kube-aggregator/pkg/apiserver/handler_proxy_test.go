@@ -871,7 +871,10 @@ func TestGetContextForNewRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(body), "context deadline exceeded") {
+	if !strings.Contains(string(body), http.StatusText(http.StatusServiceUnavailable)) {
+		t.Error(string(body))
+	}
+	if strings.Contains(string(body), "context deadline exceeded") {
 		t.Error(string(body))
 	}
 
