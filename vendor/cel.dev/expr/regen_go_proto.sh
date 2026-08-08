@@ -5,5 +5,5 @@ for src in ${files[@]};
 do
   dst=$(echo $src | sed 's/\(.*\/cel.dev\/expr\/\(.*\)\)/\2/')
   echo "copying $dst"
-  $(cp $src $dst)
+  cp "$src" "$dst"
 done
