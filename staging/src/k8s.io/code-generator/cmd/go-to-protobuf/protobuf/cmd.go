@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"unicode"
 
 	flag "github.com/spf13/pflag"
 
@@ -80,6 +81,15 @@ func (g *Generator) BindFlags(flag *flag.FlagSet) {
 	flag.BoolVar(&g.KeepGogoproto, "keep-gogoproto", g.KeepGogoproto, "If true, the generated IDL will contain gogoprotobuf extensions which are normally removed")
 	flag.BoolVar(&g.SkipGeneratedRewrite, "skip-generated-rewrite", g.SkipGeneratedRewrite, "If true, skip fixing up the generated.pb.go file (debugging only).")
 	flag.StringVar(&g.DropEmbeddedFields, "drop-embedded-fields", g.DropEmbeddedFields, "Comma-delimited list of embedded Go types to omit from generated protobufs")
+}
+
+func sanitizeLogMessage(s string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return -1
+		}
+		return r
+	}, s)
 }
 
 // This roughly models gengo/v2.Execute.
@@ -289,7 +299,7 @@ func Run(g *Generator) {
 		// alter the generated protobuf file to remove the generated types (but leave the serializers) and rewrite the
 		// package statement to match the desired package name
 		if err := RewriteGeneratedGogoProtobufFile(outputPath, p.ExtractGeneratedType, p.OptionalTypeName, buf.Bytes()); err != nil {
-			log.Fatalf("Unable to rewrite generated %s: %v", outputPath, err)
+			log.Fatalf("Unable to rewrite generated %s: %s", sanitizeLogMessage(outputPath), sanitizeLogMessage(err.Error()))
 		}
 
 		// sort imports

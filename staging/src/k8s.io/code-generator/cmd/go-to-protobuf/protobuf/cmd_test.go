@@ -21,6 +21,14 @@ import (
 	"testing"
 )
 
+func TestSanitizeLogMessage(t *testing.T) {
+	got := sanitizeLogMessage("path\r\nforged\x1b[31m\u009b0m")
+	want := "pathforged[31m0m"
+	if got != want {
+		t.Fatalf("expected %q, got %q", want, got)
+	}
+}
+
 func TestImportOrder(t *testing.T) {
 	testcases := []struct {
 		Name      string
