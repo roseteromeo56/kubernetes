@@ -115,7 +115,7 @@ function log-dump-ssh() {
   local host="$1"
   local cmd="$2"
 
-  ssh -oLogLevel=quiet -oConnectTimeout=30 -oStrictHostKeyChecking=no -i "${LOG_DUMP_SSH_KEY}" "${LOG_DUMP_SSH_USER}@${host}" "${cmd}"
+  ssh -oLogLevel=quiet -oConnectTimeout=30 -oStrictHostKeyChecking=no -i "${LOG_DUMP_SSH_KEY}" "${LOG_DUMP_SSH_USER}@${host}" 'sh -s' <<< "${cmd}"
 }
 
 # Copy all files /var/log/{$3}.log on node $1 into local dir $2.
