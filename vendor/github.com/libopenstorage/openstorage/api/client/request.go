@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"math/rand"
+	"crypto/rand"
 )
 
 // Request is contructed iteratively by the client and finally dispatched.
