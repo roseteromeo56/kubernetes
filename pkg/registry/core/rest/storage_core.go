@@ -551,7 +551,7 @@ func (s componentStatusStorage) serversToValidate() map[string]componentstatus.S
 	// TODO: switch to secure port until these components remove the ability to serve insecurely.
 	serversToValidate := map[string]componentstatus.Server{
 		"controller-manager": &componentstatus.HttpServer{EnableHTTPS: true, TLSConfig: &tls.Config{InsecureSkipVerify: true}, Addr: "127.0.0.1", Port: ports.KubeControllerManagerPort, Path: "/healthz"},
-		"scheduler":          &componentstatus.HttpServer{EnableHTTPS: true, TLSConfig: &tls.Config{InsecureSkipVerify: true}, Addr: "127.0.0.1", Port: kubeschedulerconfig.DefaultKubeSchedulerPort, Path: "/healthz"},
+		"scheduler":          &componentstatus.HttpServer{EnableHTTPS: true, TLSConfig: &tls.Config{InsecureSkipVerify: false}, Addr: "127.0.0.1", Port: kubeschedulerconfig.DefaultKubeSchedulerPort, Path: "/healthz"},
 	}
 
 	for ix, cfg := range s.storageFactory.Configs() {
