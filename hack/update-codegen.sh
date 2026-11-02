@@ -581,7 +581,8 @@ function codegen::conversions() {
         -v "${KUBE_VERBOSE}" \
         --go-header-file "${BOILERPLATE_FILENAME}" \
         --output-file "${output_file}" \
-        "$(printf -- " --extra-peer-dirs %s" "${extra_peer_pkgs[@]}")" \
+        --extra-peer-dirs \
+        "$(IFS=,; printf '%s' "${extra_peer_pkgs[*]}")" \
         "${tag_pkgs[@]}" \
         "$@"
 
