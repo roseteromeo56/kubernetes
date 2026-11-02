@@ -92,8 +92,8 @@ kube::util::read-array ALL_K8S_TAG_FILES < <(
     git_grep -l \
         -e '^// *+k8s:'                "`# match +k8s: tags` \
         -- \
-        ':!:*/testdata/*'              `"# not under any testdata` \
-        ':(glob)**/*.go'               `# in any *.go file` \
+        ':!:*/testdata/*'              `"# not under any testdata"` \
+        ':(glob)**/*.go'               `"# in any *.go file` \
     )
 if [[ "${DBG_CODEGEN}" == 1 ]]; then
     kube::log::status "DBG: found ${#ALL_K8S_TAG_FILES[@]} +k8s: tagged files"
