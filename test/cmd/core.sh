@@ -186,7 +186,7 @@ run_pod_tests() {
   kube::test::if_has_string "${output_message}" "valid-pod"
   # Command
   phase=$(kubectl get "${kube_flags[@]}" pod valid-pod -o go-template='{{ .status.phase }}')
-  output_message=$(kubectl get pods --field-selector status.phase="${phase}" "${kube_flags[@]}")
+  output_message="$(kubectl get pods --field-selector status.phase="${phase}" "${kube_flags[@]}")"
   kube::test::if_has_string "${output_message}" "valid-pod"
 
   ### Delete PODs with no parameter mustn't kill everything
