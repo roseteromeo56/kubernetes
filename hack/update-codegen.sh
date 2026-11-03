@@ -864,7 +864,7 @@ function codegen::clients() {
         --plural-exceptions "${PLURAL_EXCEPTIONS}" \
         --apply-configuration-package "${APPLYCONFIG_PKG}" \
         --prefers-protobuf \
-        "$(printf -- " --input %s" "${gv_dirs[@]}")" \
+        "${gv_dirs[@]/#/--input=}" \
         "$@"
 
     if [[ "${DBG_CODEGEN}" == 1 ]]; then
