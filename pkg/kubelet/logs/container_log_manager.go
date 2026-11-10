@@ -434,7 +434,7 @@ func (c *containerLogManager) compressLog(log string) error {
 	defer f.Close()
 	w := gzip.NewWriter(f)
 	defer w.Close()
-	if _, err := io.Copy(w, r); err != nil {
+	if _, err := io.CopyN(w, r, 1024); err != nil {
 		return fmt.Errorf("failed to compress %q to %q: %w", log, tmpLog, err)
 	}
 	// The archive needs to be closed before renaming, otherwise an error will occur on Windows.
