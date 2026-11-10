@@ -81,7 +81,7 @@ fi
 if [[ "${generate_pot}" == "true" ]]; then
   echo "Extracting strings to POT"
   # shellcheck disable=SC2046
-  go-xgettext -k=i18n.T $(grep -lr "i18n.T" "${KUBECTL_FILES[@]}" | grep -vE "${KUBECTL_IGNORE_FILES_REGEX}") > tmp.pot
+  go-xgettext -k=i18n.T "$(grep -lr "i18n.T" "${KUBECTL_FILES[@]}" | grep -vE "${KUBECTL_IGNORE_FILES_REGEX}")" > tmp.pot
   perl -pi -e 's/CHARSET/UTF-8/' tmp.pot
   perl -pi -e 's/\\(?!n"\n|")/\\\\/g' tmp.pot
   kube::util::ensure-temp-dir
